@@ -9,7 +9,12 @@ if (is_file($__envFile)) {
         $__k = trim($__k);
         $__v = trim($__v);
         $__v = trim($__v, "\"' ");
-        if ($__k !== '') { putenv("$__k=$__v"); $_ENV[$__k] = $__v; $_SERVER[$__k] = $__v; }
+        if ($__k !== '') {
+            $already = getenv($__k);
+            if ($already === false || $already === '') { // do not override server-provided env vars
+                putenv("$__k=$__v"); $_ENV[$__k] = $__v; $_SERVER[$__k] = $__v;
+            }
+        }
     }
 }
 
