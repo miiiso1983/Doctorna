@@ -5,6 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= isset($title) ? App\Core\e($title) . ' | ' : '' ?>طبيبنا</title>
+  <link rel="icon" type="image/svg+xml" href="<?= $baseUrl ?>/favicon.svg">
+  <link rel="alternate icon" href="<?= $baseUrl ?>/favicon.ico">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
