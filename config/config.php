@@ -1,7 +1,12 @@
 <?php
-// Load .env into PHP environment (simple parser)
-$__envFile = __DIR__ . '/../.env';
-if (is_file($__envFile)) {
+// Load .env into PHP environment (simple parser). Try multiple common locations (Cloudways/public_html).
+$__envPaths = [
+    __DIR__ . '/../.env',                      // app root
+    __DIR__ . '/../public_html/.env',          // when app code is above webroot
+    __DIR__ . '/../../public_html/.env',       // extra fallback
+];
+foreach ($__envPaths as $__envFile) {
+    if (!is_file($__envFile)) continue;
     foreach (file($__envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $__line) {
         $__line = trim($__line);
         if ($__line === '' || $__line[0] === '#') continue;
