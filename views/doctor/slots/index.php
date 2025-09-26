@@ -98,7 +98,7 @@
       const eVal = formSingle.querySelector('[name="ends_at"]').value;
       if (!s || !eVal) return;
       const sd = new Date(s), ed = new Date(eVal);
-      if (isNaN(sd.getTime()) || isNaN(ed.getTime())){ e.preventDefault(); alert('<?= App\\Core\\Lang::t('invalid.datetime') ?>'); return; }
+      if (isNaN(sd.getTime()) || isNaN(ed.getTime())){ e.preventDefault(); alert('<?= App\Core\Lang::t("invalid.datetime") ?>'); return; }
       if (ed <= sd){ e.preventDefault(); alert('End time must be after start time'); }
     });
   }
