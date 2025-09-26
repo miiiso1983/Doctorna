@@ -28,6 +28,16 @@ use App\Core\Request;
 use App\Core\Response;
 
 $config = require __DIR__ . '/../config/config.php';
+// Enable verbose errors if debug
+if (!headers_sent()) {
+    if (!empty($config['debug'])) {
+        ini_set('display_errors', '1');
+        ini_set('display_startup_errors', '1');
+        error_reporting(E_ALL);
+    } else {
+        ini_set('display_errors', '0');
+    }
+}
 
 // Start session safely
 if (session_status() === PHP_SESSION_NONE) {
