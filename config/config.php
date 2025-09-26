@@ -1,4 +1,18 @@
 <?php
+// Load .env into PHP environment (simple parser)
+$__envFile = __DIR__ . '/../.env';
+if (is_file($__envFile)) {
+    foreach (file($__envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $__line) {
+        $__line = trim($__line);
+        if ($__line === '' || $__line[0] === '#') continue;
+        [$__k, $__v] = array_pad(explode('=', $__line, 2), 2, '');
+        $__k = trim($__k);
+        $__v = trim($__v);
+        $__v = trim($__v, "\"' ");
+        if ($__k !== '') { putenv("$__k=$__v"); $_ENV[$__k] = $__v; $_SERVER[$__k] = $__v; }
+    }
+}
+
 // Basic configuration
 return [
     'app_name' => 'Tabeebna',
