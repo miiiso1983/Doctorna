@@ -8,18 +8,16 @@ if (is_file($autoload)) require_once $autoload;
 // Composer autoload (optional if added later)
 // require __DIR__ . '/../vendor/autoload.php';
 
-// Simple PSR-4 like autoloader for this project
+// Simple PSR-4 like autoloader for this project (supports when project lives inside webroot)
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
-    $base_dir = __DIR__ . '/../src/';
     $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
+    if (strncmp($prefix, $class, $len) !== 0) return;
     $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-    if (file_exists($file)) {
-        require $file;
+    $candidates = [__DIR__ . '/../src/', __DIR__ . '/src/'];
+    foreach ($candidates as $base_dir) {
+        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        if (is_file($file)) { require $file; return; }
     }
 });
 
