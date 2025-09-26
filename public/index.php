@@ -25,7 +25,13 @@ use App\Core\Router;
 use App\Core\Request;
 use App\Core\Response;
 
-$config = require __DIR__ . '/../config/config.php';
+$config = (function(){
+    $cands = [__DIR__ . '/../config/config.php', __DIR__ . '/config/config.php'];
+    foreach ($cands as $p) { if (is_file($p)) { return require $p; } }
+    http_response_code(500);
+    echo 'Config file not found';
+    exit;
+})();
 // Enable verbose errors if debug
 if (!headers_sent()) {
     if (!empty($config['debug'])) {
@@ -44,22 +50,30 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Load Lang and set locale
-if (!class_exists('App\\Core\\Lang') && is_file(__DIR__ . '/../src/Core/Lang.php')) require_once __DIR__ . '/../src/Core/Lang.php';
+if (!class_exists('App\\Core\\Lang')) {
+    $cands = [__DIR__ . '/../src/Core/Lang.php', __DIR__ . '/src/Core/Lang.php'];
+    foreach ($cands as $p) { if (is_file($p)) { require_once $p; break; } }
+}
 \App\Core\Lang::setLocale($_SESSION['locale'] ?? 'ar');
 
 
 // Bootstrap core
-require __DIR__ . '/../src/Core/helpers.php';
+(function(){
+    $cands = [__DIR__ . '/../src/Core/helpers.php', __DIR__ . '/src/Core/helpers.php'];
+    foreach ($cands as $p) { if (is_file($p)) { require $p; return; } }
+})();
 
 $request = new Request($config);
 $response = new Response();
 $router = new Router($request, $response, $config);
 
 // Web routes
-require __DIR__ . '/../routes/web.php';
+$__webCands = [__DIR__ . '/../routes/web.php', __DIR__ . '/routes/web.php'];
+foreach ($__webCands as $__p) { if (is_file($__p)) { require $__p; break; } }
 
 // API routes
-require __DIR__ . '/../routes/api.php';
+$__apiCands = [__DIR__ . '/../routes/api.php', __DIR__ . '/routes/api.php'];
+foreach ($__apiCands as $__p) { if (is_file($__p)) { require $__p; break; } }
 
 // Dispatch
 $router->dispatch();
