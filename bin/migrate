@@ -1,0 +1,85 @@
+#!/usr/bin/env php
+<?php
+// Simple migration runner for Tabeebna
+// Usage:
+//   php bin/migrate                  # apply schema + migrations + seed to configured DB
+//   php bin/migrate --no-seed        # skip seed
+//   php bin/migrate --create-db      # create database if missing (requires privileged user)
+
+$root = dirname(__DIR__);
+require $root . '/public/index.php'; // bootstraps autoload + loads config via index
+
+use App\Core\DB;
+
+$config = require $root . '/config/config.php';
+$dsnNoDb = sprintf('mysql:host=%s;port=%d;charset=%s', $config['db']['host'], $config['db']['port'], $config['db']['charset'] ?? 'utf8mb4');
+$dsnWithDb = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $config['db']['host'], $config['db']['port'], $config['db']['database'], $config['db']['charset'] ?? 'utf8mb4');
+
+$noSeed = in_array('--no-seed', $argv, true);
+$createDb = in_array('--create-db', $argv, true);
+
+function info($m){ fwrite(STDOUT, "[INFO] $m\n"); }
+function warn($m){ fwrite(STDERR, "[WARN] $m\n"); }
+function fail($m){ fwrite(STDERR, "[FAIL] $m\n"); exit(1); }
+
+try {
+    // try to connect to db; if fails and --create-db, create it
+    try {
+        $pdo = new PDO($dsnWithDb, $config['db']['username'], $config['db']['password'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::MYSQL_ATTR_MULTI_STATEMENTS => true,
+        ]);
+        info('Connected to database: ' . $config['db']['database']);
+    } catch (PDOException $e) {
+        if (!$createDb) {
+            warn('Cannot connect to database: ' . $e->getMessage());
+            warn('Tip: run with --create-db to create it automatically (if user has privilege).');
+            // try connect without db just to check server access
+            $pdoServer = new PDO($dsnNoDb, $config['db']['username'], $config['db']['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+            $pdoServer = null;
+            fail('Aborting. Use --create-db or create database manually.');
+        }
+        info('Attempting to create database: ' . $config['db']['database']);
+        $pdoServer = new PDO($dsnNoDb, $config['db']['username'], $config['db']['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $pdoServer->exec('CREATE DATABASE IF NOT EXISTS `' . $config['db']['database'] . '` CHARACTER SET ' . ($config['db']['charset'] ?? 'utf8mb4') . ' COLLATE ' . ($config['db']['collation'] ?? 'utf8mb4_unicode_ci'));
+        $pdoServer = null;
+        $pdo = new PDO($dsnWithDb, $config['db']['username'], $config['db']['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        info('Database created and connected.');
+    }
+
+    // apply schema
+    $schema = file_get_contents($root . '/database/schema.sql');
+    if ($schema === false) fail('Missing database/schema.sql');
+    $pdo->exec($schema);
+    info('Applied schema.sql');
+
+    // apply migrations in order
+    $migrationsDir = $root . '/database/migrations';
+    if (is_dir($migrationsDir)) {
+        $files = array_values(array_filter(scandir($migrationsDir), function($f){ return preg_match('/^\d+_.*\.sql$/', $f); }));
+        sort($files);
+        foreach ($files as $f) {
+            $sql = file_get_contents($migrationsDir . '/' . $f);
+            if ($sql === false) fail('Failed reading migration ' . $f);
+            $pdo->exec($sql);
+            info('Applied migration ' . $f);
+        }
+    }
+
+    // seed
+    if (!$noSeed) {
+        $seed = file_get_contents($root . '/database/seed.sql');
+        if ($seed !== false) {
+            $pdo->exec($seed);
+            info('Applied seed.sql');
+        } else {
+            warn('Seed file not found, skipping');
+        }
+    }
+
+    info('Migration completed successfully.');
+} catch (Throwable $e) {
+    fail($e->getMessage());
+}
+
