@@ -69,7 +69,7 @@ document.getElementById('nearbyBtn').addEventListener('click', () => {
       li.className = 'list-group-item';
       li.innerHTML = `<div class=\"d-flex justify-content-between align-items-center\">`+
                      `<span class=\"fw-semibold\">${d.name}</span>`+
-                     `<span class=\"text-muted small\">${d.specialization || '<?= App\Core\Lang::t('not_available') ?>'} • ${Number(d.distance_km).toFixed(1)} km</span>`+
+                     `<span class="text-muted small">${d.specialization || <?= json_encode(App\Core\Lang::t('not_available'), JSON_UNESCAPED_UNICODE) ?>} • ${Number(d.distance_km).toFixed(1)} km</span>`+
                      `</div>`+
                      `<div class=\"mt-2\"><select class=\"form-select form-select-sm slot-select\"><option>تحميل المواعيد...</option></select>`+
                      `<button class=\"btn btn-sm btn-success ms-2 book-btn\">احجز</button></div>`;
