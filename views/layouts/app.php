@@ -107,25 +107,6 @@
 })();
 </script>
 <script>
-// Simple client-side language toggle (AR/EN). For production, move to server-side i18n.
-function setLang(lang){
-  localStorage.setItem('doctorna_lang', lang);
-  if (lang === 'ar'){
-    document.documentElement.setAttribute('lang','ar');
-    document.documentElement.setAttribute('dir','rtl');
-  } else {
-    document.documentElement.setAttribute('lang','en');
-    document.documentElement.setAttribute('dir','ltr');
-  }
-  location.reload();
-}
-(function(){
-  const saved = localStorage.getItem('doctorna_lang') || 'ar';
-  setLang(saved);
-})();
-</script>
-</script>
-<script>
 // auto-init flatpickr on inputs if any (fallback in RTL fine)
 (function(){
   if (window.flatpickr){
