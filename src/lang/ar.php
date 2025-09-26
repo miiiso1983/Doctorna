@@ -8,7 +8,7 @@ return [
   'nav.logout' => 'خروج',
   'nav.language' => 'اللغة',
   'dark' => 'ليلي',
-  'footer.built' => 'بُني بحب ❤️',
+  
 
   // Admin Appointments
   'admin.appointments' => 'المواعيد',

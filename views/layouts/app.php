@@ -68,7 +68,7 @@
 <footer class="app-footer py-4">
   <div class="container d-flex justify-content-between">
     <span>&copy; <?= date('Y') ?> <?= App\Core\Lang::t('app.name') ?></span>
-    <span class="small">Built with ❤️</span>
+
   </div>
 </footer>
 

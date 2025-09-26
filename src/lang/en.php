@@ -8,7 +8,7 @@ return [
   'nav.logout' => 'Logout',
   'nav.language' => 'Language',
   'dark' => 'Dark',
-  'footer.built' => 'Built with ❤️',
+  
 
   // Admin Appointments
   'admin.appointments' => 'Appointments',
