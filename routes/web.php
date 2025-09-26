@@ -51,3 +51,32 @@ $router->get('/admin/appointments/export', [App\Controllers\Admin\AppointmentCon
 // Language switch
 $router->get('/lang', [App\Controllers\LangController::class, 'switch']);
 
+
+// Debug route to inspect env and test DB connection (remove in production)
+$router->get('/debug/env', function($request, $response, $config){
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "APP_ENV=" . ($config['env'] ?? '') . "\n";
+    echo "APP_DEBUG=" . (($config['debug'] ?? false) ? 'true' : 'false') . "\n";
+    echo "BASE_URL=" . ($config['base_url'] ?? '') . "\n\n";
+    echo "DB_HOST=" . ($config['db']['host'] ?? '') . "\n";
+    echo "DB_PORT=" . ($config['db']['port'] ?? '') . "\n";
+    echo "DB_DATABASE=" . ($config['db']['database'] ?? '') . "\n";
+    echo "DB_USERNAME=" . ($config['db']['username'] ?? '') . "\n";
+
+    try {
+        $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s',
+            $config['db']['host'] ?? '127.0.0.1',
+            (int)($config['db']['port'] ?? 3306),
+            $config['db']['database'] ?? '',
+            $config['db']['charset'] ?? 'utf8mb4'
+        );
+        $pdo = new \PDO($dsn, $config['db']['username'] ?? '', $config['db']['password'] ?? '', [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+        ]);
+        echo "\nDB connection: OK\n";
+    } catch (\PDOException $e) {
+        echo "\nDB connection error: " . $e->getMessage() . "\n";
+    }
+});
+
