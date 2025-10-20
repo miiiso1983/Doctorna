@@ -13,16 +13,14 @@ class AuthController extends BaseApiController
         $email = trim((string)($input['email'] ?? ''));
         $password = (string)($input['password'] ?? '');
         if ($email === '' || $password === '') {
-            $this->response->json(['error' => 'Email and password are required'], 422);
-            return;
+            $this->error('Email and password are required', 422);
         }
         $pdo = DB::conn($this->config);
         $stmt = $pdo->prepare('SELECT id, name, email, role, password FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if (!$user || !password_verify($password, $user['password'])) {
-            $this->response->json(['error' => 'Invalid credentials'], 401);
-            return;
+            $this->error('Invalid credentials', 401);
         }
         $userId = (int)$user['id'];
         $role = $user['role'];
@@ -43,7 +41,7 @@ class AuthController extends BaseApiController
         $accessToken = Jwt::encode($accessPayload, $this->config['jwt_secret']);
         $refreshToken = Jwt::encode($refreshPayload, $this->config['jwt_secret']);
         unset($user['password']);
-        $this->response->json([
+        $this->ok([
             'token' => [
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
@@ -68,8 +66,7 @@ class AuthController extends BaseApiController
             $claims = Jwt::decode($refresh, $this->config['jwt_secret']);
             if (($claims['typ'] ?? '') !== 'refresh') throw new \RuntimeException('Not a refresh token');
         } catch (\Throwable $e) {
-            $this->response->json(['error' => 'Invalid refresh token: ' . $e->getMessage()], 401);
-            return;
+            $this->error('Invalid refresh token: ' . $e->getMessage(), 401);
         }
         $now = time();
         $accessPayload = [
@@ -80,7 +77,7 @@ class AuthController extends BaseApiController
             'typ' => 'access'
         ];
         $accessToken = Jwt::encode($accessPayload, $this->config['jwt_secret']);
-        $this->response->json(['access_token' => $accessToken, 'expires_in' => 15*60]);
+        $this->ok(['access_token' => $accessToken, 'expires_in' => 15*60]);
     }
 
     // POST /api/v1/auth/logout  (optional in stateless JWT; client just discards tokens)

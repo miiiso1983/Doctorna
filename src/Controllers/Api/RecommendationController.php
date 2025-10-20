@@ -1,10 +1,9 @@
 <?php
 namespace App\Controllers\Api;
 
-use App\Core\Controller;
 use App\Core\DB;
 
-class RecommendationController extends Controller
+class RecommendationController extends BaseApiController
 {
     // Very simple rule-based mapping from keywords in symptoms -> specialization id
     public function suggestSpecialization(): void
@@ -28,7 +27,7 @@ class RecommendationController extends Controller
         $stmt = $pdo->prepare('SELECT id, name FROM specializations WHERE name = ? LIMIT 1');
         $stmt->execute([$specialization]);
         $row = $stmt->fetch() ?: ['id' => null, 'name' => $specialization];
-        $this->response->json(['suggestion' => $row]);
+        $this->ok(['suggestion' => $row]);
     }
 }
 

@@ -20,7 +20,7 @@ class DoctorAppointmentsController extends BaseApiController
         $stmt = $pdo->prepare($sql);
         $stmt->execute([(int)$claims['sub']]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->response->json(['data' => $rows]);
+        $this->ok($rows);
     }
 
     // POST /api/v1/doctor/appointments/status  JSON: {id, status}
@@ -30,7 +30,7 @@ class DoctorAppointmentsController extends BaseApiController
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $id = (int)($input['id'] ?? 0);
         $status = (string)($input['status'] ?? ''); // accepted|rejected|completed|cancelled
-        if ($id <= 0 || $status === '') { $this->response->json(['error' => 'id and status required'], 422); return; }
+        if ($id <= 0 || $status === '') { $this->error('id and status required', 422); }
 
         $pdo = DB::conn($this->config);
         $sql = 'UPDATE appointments SET status = ? WHERE id = ? AND doctor_id = (SELECT id FROM doctors WHERE user_id = ?)';
@@ -38,7 +38,7 @@ class DoctorAppointmentsController extends BaseApiController
         $stmt->execute([$status, $id, (int)$claims['sub']]);
 
         // Optional: send WhatsApp notifications similar to web controller (omitted for brevity)
-        $this->response->json(['message' => 'Updated']);
+        $this->ok(['message' => 'Updated']);
     }
 }
 
