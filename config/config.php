@@ -46,6 +46,7 @@ return [
     // Security
     'session_name' => 'doctorna_session',
     'csrf_key' => 'doctorna_csrf_token',
+    'jwt_secret' => getenv('JWT_SECRET') ?: 'change_me_secret', // set in .env for production
 
     // Mail settings (simple). Set force_log=false to attempt real sending via PHP mail()
     'mail' => [
